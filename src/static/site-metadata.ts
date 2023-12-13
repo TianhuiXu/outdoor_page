@@ -12,7 +12,7 @@ interface ISiteMetadataResult {
 const data: ISiteMetadataResult = {
   siteTitle: "Tianhui's Outdoor Journey",
   siteUrl: 'https://outdoor-journey-tianhui.vercel.app/',
-  logo: 'assets/logo.png',
+  logo: 'public/images/logo.png',
   description: "Tianhui's Outdoor Journey",
   navLinks: [
     {
