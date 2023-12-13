@@ -89,7 +89,7 @@ MAPPING_TYPE = [
     "Kayaking",
     "Snowboard",
     "Ski",
-    "StandUpPaddling"
+    "StandUpPaddling",
 ]
 
 STRAVA_GARMIN_TYPE_DICT = {
