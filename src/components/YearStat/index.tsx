@@ -5,8 +5,10 @@ import { formatPace } from '@/utils/utils';
 import styles from './style.module.scss';
 import useHover from '@/hooks/useHover';
 import { yearStats } from '@assets/index'
+import WorkoutStat from '@/components/WorkoutStat';
 
-const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) => void }) => {
+const YearStat = ({ year, onClick, onClickTypeInYear }: { year: string, onClick: (_year: string) => void ,
+  onClickTypeInYear: (_year: string, _type: string) => void }) => {
   let { activities: runs, years } = useActivities();
   // for hover
   const [hovered, eventHandlers] = useHover();
@@ -24,20 +26,21 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
   }
   let sumDistance = 0;
   let streak = 0;
-  let pace = 0; // eslint-disable-line no-unused-vars
-  let paceNullCount = 0; // eslint-disable-line no-unused-vars
   let heartRate = 0;
   let heartRateNullCount = 0;
   let totalMetersAvail = 0;
   let totalSecondsAvail = 0;
+  const workoutsCounts = {}
+
   runs.forEach((run) => {
     sumDistance += run.distance || 0;
     if (run.average_speed) {
-      pace += run.average_speed;
-      totalMetersAvail += run.distance || 0;
-      totalSecondsAvail += (run.distance || 0) / run.average_speed;
-    } else {
-      paceNullCount++;
+      if(workoutsCounts[run.type]){
+        var [oriCount, oriSecondsAvail, oriMetersAvail] = workoutsCounts[run.type]
+        workoutsCounts[run.type] = [oriCount + 1, oriSecondsAvail + (run.distance || 0) / run.average_speed, oriMetersAvail + (run.distance || 0)]
+      }else{
+        workoutsCounts[run.type] = [1, (run.distance || 0) / run.average_speed, run.distance]
+      }
     }
     if (run.average_heartrate) {
       heartRate += run.average_heartrate;
@@ -48,12 +51,16 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
       streak = Math.max(streak, run.streak);
     }
   });
-  sumDistance = parseFloat((sumDistance / 1000.0).toFixed(1));
-  const avgPace = formatPace(totalMetersAvail / totalSecondsAvail);
   const hasHeartRate = !(heartRate === 0);
   const avgHeartRate = (heartRate / (runs.length - heartRateNullCount)).toFixed(
     0
   );
+
+  const workoutsArr = Object.entries(workoutsCounts);
+  workoutsArr.sort((a, b) => {
+    return b[1][0] - a[1][0]
+  });
+
   return (
     <div
       style={{ cursor: 'pointer' }}
@@ -62,13 +69,22 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
     >
       <section>
         <Stat value={year} description=" Journey" />
-        <Stat value={runs.length} description=" Runs" />
-        <Stat value={sumDistance} description=" KM" />
-        <Stat value={avgPace} description=" Avg Pace" />
+        <Stat value={runs.length} description=" Total Outdoors" />
+        { workoutsArr.map(([type, count]) => (
+          <WorkoutStat
+            key={type}
+            value={count[0]}
+            description={` ${type}`+"s"}
+            // pace={formatPace(count[2] / count[1])}
+            distance={(count[2] / 1000.0).toFixed(0)}
+            // color={colorFromType(type)}
+            onClick={(e: Event) => {
+              onClickTypeInYear(year, type);
+              e.stopPropagation();
+            }}
+          />
+        ))}
         <Stat value={`${streak} day`} description=" Streak" />
-        {hasHeartRate && (
-          <Stat value={avgHeartRate} description=" Avg Heart Rate" />
-        )}
       </section>
       {year !== "Total" && hovered && (
         <React.Suspense fallback="loading...">

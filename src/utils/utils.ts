@@ -379,18 +379,23 @@ const filterTitleRuns = (run: Activity, title: string) =>
 const filterTypeRuns = (run: Activity, type: string) => 
   run.type === type;
 
-const filterAndSortRuns = (
-  activities: Activity[],
-  item: string,
-  filterFunc: (_run: Activity, _bvalue: string) => boolean,
-  sortFunc: (_a: Activity, _b: Activity) => number
-) => {
-  let s = activities;
-  if (item !== 'Total') {
-    s = activities.filter((run) => filterFunc(run, item));
-  }
-  return s.sort(sortFunc);
-};
+  const filterAndSortRuns = (
+    activities: Activity[],
+    item: string,
+    filterFunc: (_run: Activity, _bvalue: string) => boolean,
+    sortFunc: (_a: Activity, _b: Activity) => number,
+    item2: string | null,
+    filterFunc2: ((_run: Activity, _bvalue: string) => boolean) | null,
+  ) => {
+    let s = activities;
+    if (item !== 'Total') {
+      s = activities.filter((run) => filterFunc(run, item));
+    }
+    if(filterFunc2 != null && item2 != null){
+      s = s.filter((run) => filterFunc2(run, item2));
+    }
+    return s.sort(sortFunc);
+  };
 
 const sortDateFunc = (a: Activity, b: Activity) => {
   // @ts-ignore
