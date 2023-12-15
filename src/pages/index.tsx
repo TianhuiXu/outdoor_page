@@ -16,6 +16,7 @@ import {
   filterCityRuns,
   filterTitleRuns,
   filterYearRuns,
+  filterTypeRuns,
   geoJsonForRuns,
   getBoundsForGeoData,
   scrollToMap,
@@ -23,6 +24,7 @@ import {
   titleForShow,
   RunIds,
 } from '@/utils/utils';
+import { sassNull } from 'sass';
 
 const Index = () => {
   const { siteTitle } = useSiteMetadata();
@@ -80,7 +82,22 @@ const Index = () => {
 
   const changeType = (type: string) => {
     changeByItem(type, 'Type', filterTypeRuns);
-  }
+  };
+
+  const changeTypeInYear = (year:string, type: string) => {
+    scrollToMap();
+    // type in year, filter year first, then type
+    if(year != 'Total'){
+      setYear(year);
+      setActivity(filterAndSortRuns(activities, year, filterYearRuns, sortDateFunc, type, filterTypeRuns));
+    }
+    else {
+      setYear(thisYear);
+      setActivity(filterAndSortRuns(activities, type, filterTypeRuns, sortDateFunc, null, null));
+    }
+    setRunIndex(-1);
+    setTitle(`${year} ${type} Type Heatmap`);
+  };
 
   const locateActivity = (runIds: RunIds) => {
     const ids = new Set(runIds);
@@ -185,9 +202,10 @@ const Index = () => {
             changeYear={changeYear}
             changeCity={changeCity}
             changeType={changeType}
+            onClickTypeInYear={changeTypeInYear}
           />
         ) : (
-          <YearsStat year={year} onClick={changeYear} />
+          <YearsStat year={year} onClick={changeYear} onClickTypeInYear={changeTypeInYear}/>
         )}
       </div>
       <div className="fl w-100 w-70-l">
